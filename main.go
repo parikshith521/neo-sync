@@ -4,9 +4,23 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/fsnotify/fsnotify"
 )
+
+type FileInfo struct {
+	Name    string    `json:"name"`
+	ModTime time.Time `json:"modTime"`
+	Size    int64     `json:"size"`
+	Hash    string    `json:"hash"`
+}
+
+type FileState map[string]FileInfo
+type DirState []string
+
+var fileState FileState
+var dirState DirState
 
 func main() {
 	// Create new watcher.
