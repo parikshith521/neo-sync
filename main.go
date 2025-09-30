@@ -191,6 +191,12 @@ func main() {
 						log.Printf("ERROR during re-scan of %s: %v", filepath.Dir(event.Name), err)
 					}
 				}
+				log.Println("-------------------- STATE SNAPSHOT -----------------------------------")
+				log.Println("File State")
+				log.Println(fileState)
+				log.Println("Directory State")
+				log.Println(dirState)
+				log.Println("-----------------------------------------------------------------------")
 			case err, ok := <-watcher.Errors:
 				if !ok {
 					return
