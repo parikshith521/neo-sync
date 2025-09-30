@@ -165,15 +165,15 @@ func main() {
 								dirState[path] = true
 								err := watcher.Add(path)
 								if err != nil {
-									log.Printf("Error adding new directory %s to watcher: %v", event.Name, err)
+									log.Printf("Error adding new directory %s to watcher: %v", path, err)
 								} else {
 									dirState[path] = true
-									log.Printf("Added new directory to watcher: %s", event.Name)
+									log.Printf("Added new directory to watcher: %s", path)
 								}
 							} else {
 								hash, err := computeSHA256(path)
 								if err != nil {
-									log.Printf("Error computing hash for newly found file %s: %v", event.Name, err)
+									log.Printf("Error computing hash for newly found file %s: %v", path, err)
 									return err
 								}
 								fileState[path] = &FileInfo{
