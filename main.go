@@ -89,7 +89,7 @@ func main() {
 							Size:    info.Size(),
 							Hash:    hash,
 						}
-						log.Println("STATUS UPDATE: New file created: ", fileState[event.Name])
+						log.Println("STATUS UPDATE: New file created: ", event.Name)
 					}
 
 				// Listen to file write events.
@@ -111,7 +111,7 @@ func main() {
 						Size:    info.Size(),
 						Hash:    hash,
 					}
-					log.Println("STATUS UPDATE: File modified: ", fileState[event.Name])
+					log.Println("STATUS UPDATE: File modified: ", event.Name)
 
 				// Listen to file/directory deletion events.
 				case event.Has(fsnotify.Remove):
@@ -182,7 +182,7 @@ func main() {
 									Size:    info.Size(),
 									Hash:    hash,
 								}
-								log.Println("STATUS UPDATE: New file found: ", fileState[event.Name])
+								log.Println("STATUS UPDATE: New file found: ", event.Name)
 							}
 						}
 						return nil
@@ -229,7 +229,7 @@ func main() {
 				Size:    info.Size(),
 				Hash:    hash,
 			}
-			log.Println("Watching file: ", fileState[path])
+			log.Println("Watching file: ", path)
 		}
 		return nil
 	})
