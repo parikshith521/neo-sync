@@ -72,9 +72,9 @@ func main() {
 					if info.IsDir() {
 						err := watcher.Add(event.Name)
 						if err != nil {
-							dirState[event.Name] = true
 							log.Printf("Error adding new directory %s to watcher: %v", event.Name, err)
 						} else {
+							dirState[event.Name] = true
 							log.Printf("Added new directory to watcher: %s", event.Name)
 						}
 					} else {
@@ -133,15 +133,62 @@ func main() {
 				// Listen to file/directory rename events.
 				case event.Has(fsnotify.Rename):
 					log.Printf("RENAME EVENT: %s", event.Name)
-					_, isDir := dirState[event.Name]
-					if isDir {
+					if _, isDir := dirState[event.Name]; isDir {
+						// it's a directory that was renamed
+						// delete dir state, for files, if it has directory prefix delete them from state also
 						delete(dirState, event.Name)
-						// new inner directory paths should be added to watcher + state update, inner files => state update
-
-						log.Printf("RENAME EVENT: Directory renamed, old name: %s", event.Name)
+						for dirPath := range dirState {
+							if strings.HasPrefix(dirPath, event.Name+string(os.PathSeparator)) {
+								delete(dirState, dirPath)
+							}
+						}
+						for filePath := range fileState {
+							if strings.HasPrefix(filePath, event.Name+string(os.PathSeparator)) {
+								delete(fileState, filePath)
+							}
+						}
 					} else {
+						// it's a file that was renamed, so just delete it's state
 						delete(fileState, event.Name)
-						log.Printf("RENAME EVENT: File renamed, old name: %s", event.Name)
+					}
+					// add new states using dir walk
+					err := filepath.WalkDir(filepath.Dir(event.Name), func(path string, d os.DirEntry, err error) error {
+						_, isDirTracked := dirState[path]
+						_, isFileTracked := fileState[path]
+
+						if !isDirTracked && !isFileTracked {
+							info, statErr := d.Info()
+							if statErr != nil {
+								return statErr
+							}
+							if info.IsDir() {
+								dirState[path] = true
+								err := watcher.Add(path)
+								if err != nil {
+									log.Printf("Error adding new directory %s to watcher: %v", event.Name, err)
+								} else {
+									dirState[path] = true
+									log.Printf("Added new directory to watcher: %s", event.Name)
+								}
+							} else {
+								hash, err := computeSHA256(path)
+								if err != nil {
+									log.Printf("Error computing hash for newly found file %s: %v", event.Name, err)
+									return err
+								}
+								fileState[event.Name] = &FileInfo{
+									Name:    event.Name,
+									ModTime: info.ModTime(),
+									Size:    info.Size(),
+									Hash:    hash,
+								}
+								log.Println("STATUS UPDATE: New file found: ", fileState[event.Name])
+							}
+						}
+						return nil
+					})
+					if err != nil {
+						log.Printf("ERROR during re-scan of %s: %v", filepath.Dir(event.Name), err)
 					}
 				}
 			case err, ok := <-watcher.Errors:
