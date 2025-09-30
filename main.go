@@ -176,13 +176,13 @@ func main() {
 									log.Printf("Error computing hash for newly found file %s: %v", event.Name, err)
 									return err
 								}
-								fileState[event.Name] = &FileInfo{
-									Name:    event.Name,
+								fileState[path] = &FileInfo{
+									Name:    path,
 									ModTime: info.ModTime(),
 									Size:    info.Size(),
 									Hash:    hash,
 								}
-								log.Println("STATUS UPDATE: New file found: ", event.Name)
+								log.Println("STATUS UPDATE: New file found: ", path)
 							}
 						}
 						return nil
