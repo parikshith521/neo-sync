@@ -204,12 +204,32 @@ func main() {
 	// Should be passed as a CLA in the future.
 	targetDir := "/home/pari/Desktop/Dev/tmp"
 	err = filepath.WalkDir(targetDir, func(path string, d os.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
 		if d.IsDir() {
-			err := watcher.Add(path)
+			if err := watcher.Add(path); err != nil {
+				return err
+			}
+			dirState[path] = true
+			log.Println("Watching directory:", path)
+		} else {
+			info, err := d.Info()
 			if err != nil {
 				return err
 			}
-			log.Println("Watching directory: ", path)
+			hash, err := computeSHA256(path)
+			if err != nil {
+				log.Printf("Error computing hash for newly found file %s: %v", path, err)
+				return err
+			}
+			fileState[path] = &FileInfo{
+				Name:    path,
+				ModTime: info.ModTime(),
+				Size:    info.Size(),
+				Hash:    hash,
+			}
+			log.Println("Watching file: ", fileState[path])
 		}
 		return nil
 	})
