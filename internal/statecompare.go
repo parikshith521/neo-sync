@@ -54,6 +54,7 @@ func Compare(localDirState models.DirState, localFileState models.FileState, rem
 	}
 
 	// File state comparison
+	// Need to consider file hash mismatch
 	for filePath := range remoteFileState {
 		localFilePath, err := convertRemoteToLocalPath(localRoot, remoteRoot, filePath)
 		if err != nil {
