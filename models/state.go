@@ -11,3 +11,8 @@ type FileInfo struct {
 
 type FileState map[string]*FileInfo
 type DirState map[string]bool
+
+type ResponseData struct {
+	Files FileState `json:"files"`
+	Dirs  DirState  `json:"dirs"`
+}
