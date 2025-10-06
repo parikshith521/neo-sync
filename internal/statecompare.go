@@ -54,7 +54,6 @@ func Compare(localDirState models.DirState, localFileState models.FileState, rem
 	}
 
 	// File state comparison
-	// Need to consider file hash mismatch
 	for filePath := range remoteFileState {
 		localFilePath, err := convertRemoteToLocalPath(localRoot, remoteRoot, filePath)
 		if err != nil {
@@ -63,6 +62,13 @@ func Compare(localDirState models.DirState, localFileState models.FileState, rem
 		if _, ok := localFileState[localFilePath]; !ok {
 			command := "touch " + localFilePath
 			actions = append(actions, command)
+		} else {
+			// File hash verification for common files
+			if remoteFileState[filePath].Hash != localFileState[localFilePath].Hash {
+				command := "touch " + localFilePath
+				actions = append(actions, command)
+			}
+
 		}
 	}
 	for filePath := range localFileState {
